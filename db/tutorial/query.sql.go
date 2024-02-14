@@ -12,35 +12,39 @@ import (
 
 const createAccount = `-- name: CreateAccount :execresult
 INSERT INTO account (
-    owner,
+    account_name,
     balance,
     currency
-) VALUES (
-  $1, $2, $3
-)
+) VALUES (?,?,?)
 `
 
-func (q *Queries) CreateAccount(ctx context.Context) (sql.Result, error) {
-	return q.db.ExecContext(ctx, createAccount)
+type CreateAccountParams struct {
+	AccountName string
+	Balance     int64
+	Currency    string
+}
+
+func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createAccount, arg.AccountName, arg.Balance, arg.Currency)
 }
 
 const deleteAccount = `-- name: DeleteAccount :exec
 DELETE FROM account
-WHERE id = $1
+WHERE id = ?
 `
 
-func (q *Queries) DeleteAccount(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, deleteAccount)
+func (q *Queries) DeleteAccount(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteAccount, id)
 	return err
 }
 
 const getAuthor = `-- name: GetAuthor :one
 SELECT id, account_name, balance, currency, created_at FROM account
-WHERE id = $1 LIMIT 1
+WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) GetAuthor(ctx context.Context) (Account, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor)
+func (q *Queries) GetAuthor(ctx context.Context, id int64) (Account, error) {
+	row := q.db.QueryRowContext(ctx, getAuthor, id)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -54,13 +58,20 @@ func (q *Queries) GetAuthor(ctx context.Context) (Account, error) {
 
 const listAccounts = `-- name: ListAccounts :many
 SELECT id, account_name, balance, currency, created_at FROM account
+WHERE id = ?
 ORDER BY id
-LIMIT 1
-OFFSET 2
+LIMIT ?
+OFFSET ?
 `
 
-func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
-	rows, err := q.db.QueryContext(ctx, listAccounts)
+type ListAccountsParams struct {
+	ID     int64
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
+	rows, err := q.db.QueryContext(ctx, listAccounts, arg.ID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -88,13 +99,17 @@ func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
 	return items, nil
 }
 
-const updateAccount = `-- name: UpdateAccount :exec
+const updateAccount = `-- name: UpdateAccount :execresult
 UPDATE account
-SET balance = $200
-WHERE id = $1
+SET balance = ?
+WHERE id = ?
 `
 
-func (q *Queries) UpdateAccount(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, updateAccount)
-	return err
+type UpdateAccountParams struct {
+	Balance int64
+	ID      int64
+}
+
+func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, updateAccount, arg.Balance, arg.ID)
 }

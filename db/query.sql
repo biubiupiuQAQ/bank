@@ -1,27 +1,26 @@
 -- name: CreateAccount :execresult
 INSERT INTO account (
-    owner,
+    account_name,
     balance,
     currency
-) VALUES (
-  $1, $2, $3
-);
+) VALUES (?,?,?);
 
 -- name: GetAuthor :one
 SELECT * FROM account
-WHERE id = $1 LIMIT 1;
+WHERE id = ? LIMIT 1;
 
 -- name: ListAccounts :many
 SELECT * FROM account
+WHERE id = ?
 ORDER BY id
-LIMIT 1
-OFFSET 2;
+LIMIT ?
+OFFSET ?;
 
--- name: UpdateAccount :exec
+-- name: UpdateAccount :execresult
 UPDATE account
-SET balance = $200
-WHERE id = $1;
+SET balance = ?
+WHERE id = ?;
 
 -- name: DeleteAccount :exec
 DELETE FROM account
-WHERE id = $1;
+WHERE id = ?;
