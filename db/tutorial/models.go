@@ -19,14 +19,13 @@ type Account struct {
 type Transfer struct {
 	ID            int64
 	FromAccountID int64
-	ToAccoutID    int64
+	ToAccountID   int64
 	Amount        int64
 	CreatedAt     time.Time
 }
 
 type User struct {
 	ID        int64
-	Username  string
 	AccountID int64
 	Amount    int64
 	CreatedAt time.Time

@@ -4,4 +4,6 @@ migrateup:
 	migrate  -path db/migration -database "mysql://root:123456@tcp(127.0.0.1:3307)/bank" -verbose up
 migratedown:
 	migrate  -path db/migration -database "mysql://root:123456@tcp(127.0.0.1:3307)/bank" -verbose down
-.PHONY: mysql migrateup migratedown
+test:
+	go test -v -cover ./...
+.PHONY: mysql migrateup migratedown test

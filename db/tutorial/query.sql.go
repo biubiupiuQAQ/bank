@@ -28,6 +28,44 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (s
 	return q.db.ExecContext(ctx, createAccount, arg.AccountName, arg.Balance, arg.Currency)
 }
 
+const createTransfer = `-- name: CreateTransfer :execresult
+INSERT INTO transfers (
+    from_account_id,
+    to_account_id,
+    amount
+) VALUES (
+    ?,?,?
+)
+`
+
+type CreateTransferParams struct {
+	FromAccountID int64
+	ToAccountID   int64
+	Amount        int64
+}
+
+func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createTransfer, arg.FromAccountID, arg.ToAccountID, arg.Amount)
+}
+
+const createUser = `-- name: CreateUser :execresult
+INSERT INTO users(
+    account_id,
+    amount
+)   VALUES (
+    ?,?
+)
+`
+
+type CreateUserParams struct {
+	AccountID int64
+	Amount    int64
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createUser, arg.AccountID, arg.Amount)
+}
+
 const deleteAccount = `-- name: DeleteAccount :exec
 DELETE FROM account
 WHERE id = ?
@@ -38,13 +76,13 @@ func (q *Queries) DeleteAccount(ctx context.Context, id int64) error {
 	return err
 }
 
-const getAuthor = `-- name: GetAuthor :one
+const getAccount = `-- name: GetAccount :one
 SELECT id, account_name, balance, currency, created_at FROM account
 WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) GetAuthor(ctx context.Context, id int64) (Account, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
+	row := q.db.QueryRowContext(ctx, getAccount, id)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -56,22 +94,78 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (Account, error) {
 	return i, err
 }
 
+const getAccountForUpdate = `-- name: GetAccountForUpdate :one
+SELECT id, account_name, balance, currency, created_at FROM account
+WHERE id =? LIMIT 1
+FOR UPDATE
+`
+
+func (q *Queries) GetAccountForUpdate(ctx context.Context, id int64) (Account, error) {
+	row := q.db.QueryRowContext(ctx, getAccountForUpdate, id)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.AccountName,
+		&i.Balance,
+		&i.Currency,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getTransfer = `-- name: GetTransfer :one
+SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
+WHERE id = ? 
+LIMIT 1
+`
+
+func (q *Queries) GetTransfer(ctx context.Context, id int64) (Transfer, error) {
+	row := q.db.QueryRowContext(ctx, getTransfer, id)
+	var i Transfer
+	err := row.Scan(
+		&i.ID,
+		&i.FromAccountID,
+		&i.ToAccountID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUser = `-- name: GetUser :one
+SELECT id, account_id, amount, created_at FROM users
+WHERE id = ?
+LIMIT 1
+`
+
+func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.AccountID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const listAccounts = `-- name: ListAccounts :many
 SELECT id, account_name, balance, currency, created_at FROM account
-WHERE id = ?
+WHERE account_name = ?
 ORDER BY id
 LIMIT ?
 OFFSET ?
 `
 
 type ListAccountsParams struct {
-	ID     int64
-	Limit  int32
-	Offset int32
+	AccountName string
+	Limit       int32
+	Offset      int32
 }
 
 func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
-	rows, err := q.db.QueryContext(ctx, listAccounts, arg.ID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listAccounts, arg.AccountName, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -84,6 +178,100 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 			&i.AccountName,
 			&i.Balance,
 			&i.Currency,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTransfers = `-- name: ListTransfers :many
+SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
+WHERE 
+    from_account_id = ?
+    OR
+    to_account_id = ?
+ORDER BY id
+LIMIT ?
+OFFSET ?
+`
+
+type ListTransfersParams struct {
+	FromAccountID int64
+	ToAccountID   int64
+	Limit         int32
+	Offset        int32
+}
+
+func (q *Queries) ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfer, error) {
+	rows, err := q.db.QueryContext(ctx, listTransfers,
+		arg.FromAccountID,
+		arg.ToAccountID,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Transfer
+	for rows.Next() {
+		var i Transfer
+		if err := rows.Scan(
+			&i.ID,
+			&i.FromAccountID,
+			&i.ToAccountID,
+			&i.Amount,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUsers = `-- name: ListUsers :many
+SELECT id, account_id, amount, created_at FROM users
+WHERE account_id = ?
+ORDER BY id
+LIMIT ?
+OFFSET ?
+`
+
+type ListUsersParams struct {
+	AccountID int64
+	Limit     int32
+	Offset    int32
+}
+
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, listUsers, arg.AccountID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.AccountID,
+			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
