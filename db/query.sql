@@ -26,6 +26,11 @@ UPDATE account
 SET balance = ?
 WHERE id = ?;
 
+-- name: AddAccountBalance :execresult
+UPDATE account
+SET balance = balance + ?
+WHERE id = ? ;
+
 -- name: DeleteAccount :exec
 DELETE FROM account
 WHERE id = ?;
