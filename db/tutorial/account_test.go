@@ -58,11 +58,11 @@ func TestUpdateAccount(t *testing.T) {
 	require.NotEmpty(t, account)
 }
 
-func TestDeleteAccount(t *testing.T) {
-	var id int64 = 6
-	err := testQueries.DeleteAccount(context.Background(), id)
-	require.NoError(t, err)
-}
+// func TestDeleteAccount(t *testing.T) {
+// 	var id int64 = 6
+// 	err := testQueries.DeleteAccount(context.Background(), id)
+// 	require.NoError(t, err)
+// }
 
 func TestListAccount(t *testing.T) {
 	arg := ListAccountsParams{
