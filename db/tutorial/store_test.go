@@ -12,6 +12,7 @@ import (
 
 func TestTransferTxDeadlock(t *testing.T) {
 	testDB, err := sql.Open(dbDriver, dbSource)
+
 	if err != nil {
 		log.Fatal("Cannot Connect Database: ", err)
 	}
