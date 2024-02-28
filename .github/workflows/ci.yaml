@@ -16,7 +16,6 @@ jobs:
       mysql:
         image: mysql:latest
         env:
-          MYSQL_ROOT_PASSWORD: 123456
           MYSQL_DATABASE: bank
           MYSQL_USER: root
           MYSQL_PASSWORD: 123456
@@ -37,7 +36,7 @@ jobs:
       run: make migrateup
 
     - name: Test
-      run: |
+      run: |  
             cd db
             go test -v -cover ./...
            
