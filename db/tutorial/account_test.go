@@ -36,7 +36,7 @@ func TestCreateAccount(t *testing.T) {
 }
 
 func TestGetAccount(t *testing.T) {
-	var id int64 = 3
+	var id int64 = 1
 	account, err := testQueries.GetAccount(context.Background(), id)
 	if err != nil {
 		log.Fatal(err)
@@ -47,7 +47,7 @@ func TestGetAccount(t *testing.T) {
 
 func TestUpdateAccount(t *testing.T) {
 	arg := UpdateAccountParams{
-		ID:      4,
+		ID:      1,
 		Balance: util.RandomMoney(),
 	}
 	account, err := testQueries.UpdateAccount(context.Background(), arg)
