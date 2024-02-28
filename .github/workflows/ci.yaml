@@ -39,12 +39,7 @@ jobs:
 
 
     - name: Test
-<<<<<<< HEAD
-      run: cd db
-           go test -v -cover ./...
-=======
       run: |
             cd db
             go test -v -cover ./...
            
->>>>>>> b7e8db1df14e4d31fee7eec0b06915fca7ea7592
