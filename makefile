@@ -6,4 +6,6 @@ migratedown:
 	migrate  -path db/migration -database "mysql://root:123456@tcp(127.0.0.1:3307)/bank" -verbose down
 test:
 	go test -v -cover ./...
-.PHONY: mysql migrateup migratedown test
+server:
+	go run main.go
+.PHONY: mysql migrateup migratedown test server

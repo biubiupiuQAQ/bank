@@ -1,4 +1,4 @@
-package tutorial
+package db
 
 import (
 	"context"

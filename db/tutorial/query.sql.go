@@ -3,7 +3,7 @@
 //   sqlc v1.25.0
 // source: query.sql
 
-package tutorial
+package db
 
 import (
 	"context"
@@ -24,7 +24,6 @@ type AddAccountBalanceParams struct {
 func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (sql.Result, error) {
 	return q.db.ExecContext(ctx, addAccountBalance, arg.Balance, arg.ID)
 }
-
 const createAccount = `-- name: CreateAccount :execresult
 INSERT INTO account (
     account_name,
