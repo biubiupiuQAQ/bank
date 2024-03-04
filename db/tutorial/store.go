@@ -1,4 +1,4 @@
-package db
+package tutorial
 
 import (
 	"context"
@@ -19,9 +19,9 @@ func NewStore(db *sql.DB) *Store {
 	}
 }
 
-func New(db *sql.DB) {
-	panic("unimplemented")
-}
+// func New(db *sql.DB) {
+// 	panic("unimplemented")
+// }
 
 // execTx 执行一个数据库事务
 func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {

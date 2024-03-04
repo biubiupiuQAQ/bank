@@ -1,4 +1,4 @@
-package db
+package tutorial
 
 import (
 	"context"
@@ -65,13 +65,11 @@ func TestUpdateAccount(t *testing.T) {
 // }
 
 func TestListAccount(t *testing.T) {
-	arg := ListAccountsParams{
-		AccountName: "alen",
-		Limit:       5,
-		Offset:      0,
+	arg := ListAllAccountsParams{
+		Limit:  1,
+		Offset: 5,
 	}
-
-	accounts, err := testQueries.ListAccounts(context.Background(), arg)
+	accounts, err := testQueries.ListAllAccounts(context.Background(), arg)
 	require.NoError(t, err)
 	n := len(accounts)
 	for i := 0; i < n; i++ {

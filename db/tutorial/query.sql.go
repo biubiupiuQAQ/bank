@@ -3,7 +3,7 @@
 //   sqlc v1.25.0
 // source: query.sql
 
-package db
+package tutorial
 
 import (
 	"context"
@@ -24,6 +24,7 @@ type AddAccountBalanceParams struct {
 func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (sql.Result, error) {
 	return q.db.ExecContext(ctx, addAccountBalance, arg.Balance, arg.ID)
 }
+
 const createAccount = `-- name: CreateAccount :execresult
 INSERT INTO account (
     account_name,
@@ -184,7 +185,48 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Account
+	items := []Account{}
+	for rows.Next() {
+		var i Account
+		if err := rows.Scan(
+			&i.ID,
+			&i.AccountName,
+			&i.Balance,
+			&i.Currency,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAllAccounts = `-- name: ListAllAccounts :many
+SELECT id, account_name, balance, currency, created_at FROM account
+ORDER BY id
+LIMIT ?
+OFFSET ?
+`
+
+type ListAllAccountsParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) ListAllAccounts(ctx context.Context, arg ListAllAccountsParams) ([]Account, error) {
+	rows, err := q.db.QueryContext(ctx, listAllAccounts, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Account{}
 	for rows.Next() {
 		var i Account
 		if err := rows.Scan(
@@ -236,7 +278,7 @@ func (q *Queries) ListTransfers(ctx context.Context, arg ListTransfersParams) ([
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Transfer
+	items := []Transfer{}
 	for rows.Next() {
 		var i Transfer
 		if err := rows.Scan(
@@ -279,7 +321,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	items := []User{}
 	for rows.Next() {
 		var i User
 		if err := rows.Scan(

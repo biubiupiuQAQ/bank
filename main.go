@@ -6,6 +6,7 @@ import (
 
 	"github.com/biubiupiuQAQ/bank/tree/master/api"
 	db "github.com/biubiupiuQAQ/bank/tree/master/db/tutorial"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 const (

@@ -21,6 +21,12 @@ ORDER BY id
 LIMIT ?
 OFFSET ?;
 
+-- name: ListAllAccounts :many
+SELECT * FROM account
+ORDER BY id
+LIMIT ?
+OFFSET ?;
+
 -- name: UpdateAccount :execresult
 UPDATE account
 SET balance = ?
