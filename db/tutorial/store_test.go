@@ -2,20 +2,18 @@ package tutorial
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestTransferTxDeadlock(t *testing.T) {
-	testDB, err := sql.Open(dbDriver, dbSource)
+	// testDB, err := sql.Open(dbDriver, dbSource)
 
-	if err != nil {
-		log.Fatal("Cannot Connect Database: ", err)
-	}
+	// if err != nil {
+	// 	log.Fatal("Cannot Connect Database: ", err)
+	// }
 	store := NewStore(testDB)
 
 	account1 := createRandomAccount(t)
@@ -64,10 +62,10 @@ func TestTransferTxDeadlock(t *testing.T) {
 }
 
 func TestTransferTx(t *testing.T) {
-	testDB, err := sql.Open(dbDriver, dbSource)
-	if err != nil {
-		log.Fatal("Cannot Connect Database: ", err)
-	}
+	// testDB, err := sql.Open(dbDriver, dbSource)
+	// if err != nil {
+	// 	log.Fatal("Cannot Connect Database: ", err)
+	// }
 	store := NewStore(testDB)
 
 	account1 := createRandomAccount(t)
