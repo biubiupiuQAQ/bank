@@ -6,14 +6,18 @@ import (
 	"fmt"
 )
 
-type Store struct {
+type Store interface {
+	Querier
+}
+
+type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
 // NewStore create a new Store
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db),
 	}
@@ -24,7 +28,7 @@ func NewStore(db *sql.DB) *Store {
 // }
 
 // execTx 执行一个数据库事务
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	// 开启一个数据库事务
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -63,7 +67,7 @@ type TransferTxResult struct {
 }
 
 // TransferTx 执行账户间的金钱交易
-func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error

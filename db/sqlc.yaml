@@ -8,3 +8,4 @@ sql:
         package: "tutorial"
         out: "tutorial"
         emit_empty_slices: true
+        emit_interface: true
